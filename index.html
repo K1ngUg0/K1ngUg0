@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>King Ugo — UI Component Library</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #07070f;
+      --surface: #0f0e1a;
+      --border: rgba(124,58,237,0.18);
+      --purple: #7c3aed;
+      --violet: #a78bfa;
+      --text: #e2e8f0;
+      --muted: #64748b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* noise overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    header {
+      position: relative; z-index: 1;
+      padding: 72px 40px 48px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(124,58,237,0.07) 0%, transparent 100%);
+    }
+
+    header .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: var(--purple);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 30%, var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    main {
+      position: relative; z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 64px 32px;
+    }
+
+    .category {
+      margin-bottom: 72px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .category-header .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--purple);
+      background: rgba(124,58,237,0.1);
+      border: 1px solid rgba(124,58,237,0.25);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .category-header h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .category-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      border-color: rgba(124,58,237,0.55);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(124,58,237,0.15), 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    .card-preview {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-preview::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0.12;
+    }
+
+    /* category preview tints */
+    .cat-input   .card-preview::before { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
+    .cat-nav     .card-preview::before { background: linear-gradient(135deg, #10b981, #3b82f6); }
+    .cat-feedback .card-preview::before { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .cat-utility  .card-preview::before { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
+
+    .card-body {
+      padding: 18px 20px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .card-cta {
+      margin-top: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--violet);
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-cta::after {
+      content: '→';
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover .card-cta::after { transform: translateX(4px); }
+
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">// component library</p>
+  <h1>King Ugo<br/>UI Components</h1>
+  <p>A curated collection of handcrafted HTML, CSS & JS components — built for learning and portfolio use.</p>
+</header>
+
+<main>
+
+  <!-- USER INPUT & FORMS -->
+  <section class="category cat-input">
+    <div class="category-header">
+      <span class="tag">01</span>
+      <h2>User Input &amp; Forms</h2>
+    </div>
+    <div class="grid">
+      <a class="card" href="login-form.html">
+        <div class="card-preview">🔐</div>
+        <div class="card-body">
+          <div class="card-title">Login / Register Form</div>
+          <div class="card-desc">Responsive animated form with tab-switching between login and registration states.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+      <a class="card" href="toggle-switch.html">
+        <div class="card-preview">🔘</div>
+        <div class="card-body">
+          <div class="card-title">Custom Toggle Switches</div>
+          <div class="card-desc">Styled toggle switches in multiple variants — pure CSS, no JavaScript required.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+      <a class="card" href="star-rating.html">
+        <div class="card-preview">⭐</div>
+        <div class="card-body">
+          <div class="card-title">Star Rating</div>
+          <div class="card-desc">Interactive star rating widget with hover and selection states, pure CSS.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- NAVIGATION SYSTEMS -->
+  <section class="category cat-nav">
+    <div class="category-header">
+      <span class="tag">02</span>
+      <h2>Navigation Systems</h2>
+    </div>
+    <div class="grid">
+      <a class="card" href="sidebar-menu.html">
+        <div class="card-preview">📂</div>
+        <div class="card-body">
+          <div class="card-title">Sidebar Menu</div>
+          <div class="card-desc">Collapsible animated sidebar with icon-only and expanded states.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+      <a class="card" href="circular-menu.html">
+        <div class="card-preview">🔵</div>
+        <div class="card-body">
+          <div class="card-title">Circular Social Menu</div>
+          <div class="card-desc">Expanding radial menu with 8 social icons, spring animations, pure CSS toggle.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- VISUAL FEEDBACK -->
+  <section class="category cat-feedback">
+    <div class="category-header">
+      <span class="tag">03</span>
+      <h2>Visual Feedback</h2>
+    </div>
+    <div class="grid">
+      <a class="card" href="loading-spinners.html">
+        <div class="card-preview">⏳</div>
+        <div class="card-body">
+          <div class="card-title">CSS Loading Spinners</div>
+          <div class="card-desc">8 distinct loader animations — rings, dots, bars, pulse — all pure CSS.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+      <a class="card" href="button-effects.html">
+        <div class="card-preview">✨</div>
+        <div class="card-body">
+          <div class="card-title">Button Hover Effects</div>
+          <div class="card-desc">10 creative button styles with unique hover/active animations and transitions.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+      <a class="card" href="modal.html">
+        <div class="card-preview">💬</div>
+        <div class="card-body">
+          <div class="card-title">Popup Modal</div>
+          <div class="card-desc">Accessible modal dialog with backdrop blur, entrance animation and close controls.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE UTILITIES -->
+  <section class="category cat-utility">
+    <div class="category-header">
+      <span class="tag">04</span>
+      <h2>Interactive Utilities</h2>
+    </div>
+    <div class="grid">
+      <a class="card" href="calculator.html">
+        <div class="card-preview">🧮</div>
+        <div class="card-body">
+          <div class="card-title">Working Calculator</div>
+          <div class="card-desc">Fully functional calculator with keyboard support, history display, and smooth key animations.</div>
+          <div class="card-cta">View component</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>// built by King Ugo &nbsp;·&nbsp; HTML · CSS · JS</footer>
+
+</body>
+</html>

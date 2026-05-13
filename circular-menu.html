@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Circular Social Menu</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #080810;
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Ambient background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── MENU WRAPPER ── */
+    .menu {
+      position: relative;
+      width: 64px;
+      height: 64px;
+    }
+
+    /* Hide the real checkbox */
+    .menu input[type="checkbox"] {
+      display: none;
+    }
+
+    /* ── TOGGLE BUTTON ── */
+    .menu-toggle {
+      position: absolute;
+      top: 0; left: 0;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      box-shadow:
+        0 0 0 2px rgba(124, 58, 237, 0.3),
+        0 0 30px rgba(124, 58, 237, 0.4),
+        0 4px 20px rgba(0,0,0,0.5);
+      transition:
+        background 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      user-select: none;
+    }
+
+    .menu-toggle:hover {
+      transform: scale(1.08);
+      box-shadow:
+        0 0 0 3px rgba(124, 58, 237, 0.5),
+        0 0 45px rgba(124, 58, 237, 0.55),
+        0 4px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Hamburger → X icon */
+    .menu-toggle .icon-menu,
+    .menu-toggle .icon-close {
+      position: absolute;
+      font-size: 22px;
+      color: #fff;
+      transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .menu-toggle .icon-close {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.6);
+    }
+
+    /* When checked → swap icons */
+    #menu-state:checked ~ .menu-toggle .icon-menu {
+      opacity: 0;
+      transform: rotate(90deg) scale(0.6);
+    }
+
+    #menu-state:checked ~ .menu-toggle .icon-close {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+
+    #menu-state:checked ~ .menu-toggle {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow:
+        0 0 0 2px rgba(239, 68, 68, 0.3),
+        0 0 30px rgba(239, 68, 68, 0.4),
+        0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    /* ── SOCIAL BUTTONS ── */
+    .btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 18px;
+      color: #fff;
+      margin: -26px 0 0 -26px;   /* center offset = half of 52px */
+      opacity: 0;
+      transform: translate(0, 0) scale(0.3);
+      transition:
+        transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity   0.35s ease,
+        box-shadow 0.25s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      pointer-events: none;
+    }
+
+    .btn:hover {
+      filter: brightness(1.2);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+      transform: scale(1.12) !important;   /* override position on hover */
+    }
+
+    /* ── OPEN STATE: position each button in a circle ── */
+    /*
+      8 items → 360/8 = 45° apart
+      radius ≈ 110px
+      offsets: translateX(r·sin θ)  translateY(−r·cos θ)
+
+      Item 1 (GitHub)    θ=0°    → (0, -110)
+      Item 2 (YouTube)   θ=45°   → (78, -78)
+      Item 3 (TikTok)    θ=90°   → (110, 0)
+      Item 4 (Instagram) θ=135°  → (78, 78)
+      Item 5 (Facebook)  θ=180°  → (0, 110)
+      Item 6 (Twitter/X) θ=225°  → (-78, 78)
+      Item 7 (WordPress) θ=270°  → (-110, 0)
+      Item 8 (LinkedIn)  θ=315°  → (-78, -78)
+    */
+
+    #menu-state:checked ~ .btn { opacity: 1; pointer-events: auto; }
+
+    /* GitHub */
+    #menu-state:checked ~ .btn:nth-of-type(1) {
+      transform: translate(0px, -115px) scale(1);
+      transition-delay: 0.03s;
+    }
+    /* YouTube */
+    #menu-state:checked ~ .btn:nth-of-type(2) {
+      transform: translate(81px, -81px) scale(1);
+      transition-delay: 0.06s;
+    }
+    /* TikTok */
+    #menu-state:checked ~ .btn:nth-of-type(3) {
+      transform: translate(115px, 0px) scale(1);
+      transition-delay: 0.09s;
+    }
+    /* Instagram */
+    #menu-state:checked ~ .btn:nth-of-type(4) {
+      transform: translate(81px, 81px) scale(1);
+      transition-delay: 0.12s;
+    }
+    /* Facebook */
+    #menu-state:checked ~ .btn:nth-of-type(5) {
+      transform: translate(0px, 115px) scale(1);
+      transition-delay: 0.15s;
+    }
+    /* Twitter/X */
+    #menu-state:checked ~ .btn:nth-of-type(6) {
+      transform: translate(-81px, 81px) scale(1);
+      transition-delay: 0.18s;
+    }
+    /* WordPress */
+    #menu-state:checked ~ .btn:nth-of-type(7) {
+      transform: translate(-115px, 0px) scale(1);
+      transition-delay: 0.21s;
+    }
+    /* LinkedIn */
+    #menu-state:checked ~ .btn:nth-of-type(8) {
+      transform: translate(-81px, -81px) scale(1);
+      transition-delay: 0.24s;
+    }
+
+    /* ── BRAND COLORS ── */
+    .btn.github     { background: #24292e; }
+    .btn.youtube    { background: #FF0000; }
+    .btn.tiktok     { background: #010101; border: 1.5px solid #69C9D0; }
+    .btn.instagram  { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+    .btn.facebook   { background: #1877F2; }
+    .btn.twitter    { background: #14171A; }
+    .btn.wordpress  { background: #21759b; }
+    .btn.linkedin   { background: #0A66C2; }
+
+    /* ── TOOLTIP LABELS ── */
+    .btn::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: rgba(15, 12, 41, 0.9);
+      backdrop-filter: blur(8px);
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      padding: 4px 9px;
+      border-radius: 6px;
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* bottom-positioned tooltips flip up for lower buttons */
+    .btn:nth-of-type(4)::after,
+    .btn:nth-of-type(5)::after,
+    .btn:nth-of-type(6)::after {
+      bottom: auto;
+      top: calc(100% + 8px);
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    .btn:nth-of-type(4):hover::after,
+    .btn:nth-of-type(5):hover::after,
+    .btn:nth-of-type(6):hover::after {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── PULSE RING on toggle button (idle hint) ── */
+    .menu-toggle::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid rgba(124, 58, 237, 0.5);
+      animation: pulse-ring 2.2s ease-out infinite;
+    }
+
+    #menu-state:checked ~ .menu-toggle::after {
+      display: none;
+    }
+
+    @keyframes pulse-ring {
+      0%   { transform: scale(0.95); opacity: 0.6; }
+      60%  { transform: scale(1.25); opacity: 0; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+
+    /* ── HINT TEXT ── */
+    .hint {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(148, 163, 184, 0.5);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="menu">
+
+    <!-- Toggle checkbox -->
+    <input type="checkbox" id="menu-state" />
+
+    <!-- Social buttons (must be siblings of input, before label) -->
+    <a class="btn github"    href="#" data-label="GitHub"    target="_blank"><i class="fab fa-github"></i></a>
+    <a class="btn youtube"   href="#" data-label="YouTube"   target="_blank"><i class="fab fa-youtube"></i></a>
+    <a class="btn tiktok"    href="#" data-label="TikTok"    target="_blank"><i class="fab fa-tiktok"></i></a>
+    <a class="btn instagram" href="#" data-label="Instagram" target="_blank"><i class="fab fa-instagram"></i></a>
+    <a class="btn facebook"  href="#" data-label="Facebook"  target="_blank"><i class="fab fa-facebook-f"></i></a>
+    <a class="btn twitter"   href="#" data-label="Twitter/X" target="_blank"><i class="fab fa-x-twitter"></i></a>
+    <a class="btn wordpress" href="#" data-label="WordPress" target="_blank"><i class="fab fa-wordpress"></i></a>
+    <a class="btn linkedin"  href="#" data-label="LinkedIn"  target="_blank"><i class="fab fa-linkedin-in"></i></a>
+
+    <!-- Toggle label (the visible button) -->
+    <label class="menu-toggle" for="menu-state">
+      <i class="fas fa-bars icon-menu"></i>
+      <i class="fas fa-xmark icon-close"></i>
+    </label>
+
+  </div>
+
+  <p class="hint">Click to expand</p>
+
+</body>
+</html>

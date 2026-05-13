@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Popup Modal</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #07070f;
+      font-family: 'DM Sans', sans-serif;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 40px 24px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(124,58,237,0.09) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .back {
+      position: fixed; top: 20px; left: 24px;
+      font-size: 12px; color: #475569;
+      text-decoration: none; font-family: 'JetBrains Mono', monospace;
+      transition: color 0.2s; z-index: 10;
+    }
+    .back:hover { color: #a78bfa; }
+
+    .page-hint {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #7c3aed;
+      margin-bottom: 24px;
+    }
+
+    /* trigger buttons */
+    .trigger-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-trigger {
+      padding: 12px 26px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-trigger:hover { transform: translateY(-2px); }
+
+    .btn-trigger.primary {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+    }
+
+    .btn-trigger.danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(239,68,68,0.35);
+    }
+
+    .btn-trigger.success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(16,185,129,0.35);
+    }
+
+    .btn-trigger.info {
+      background: rgba(255,255,255,0.06);
+      color: #a78bfa;
+      border: 1px solid rgba(124,58,237,0.3);
+    }
+
+    /* ── OVERLAY ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── MODAL BOX ── */
+    .modal {
+      background: #0f0e1a;
+      border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 440px;
+      padding: 36px;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset;
+      transform: scale(0.88) translateY(20px);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .overlay.open .modal {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    /* modal icon */
+    .modal-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    .modal-icon.purple { background: rgba(124,58,237,0.15); }
+    .modal-icon.red    { background: rgba(239,68,68,0.15); }
+    .modal-icon.green  { background: rgba(16,185,129,0.15); }
+    .modal-icon.blue   { background: rgba(59,130,246,0.15); }
+
+    .modal h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .modal p {
+      font-size: 0.88rem;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* close X */
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.05);
+      border: none;
+      border-radius: 8px;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+
+    /* modal actions */
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.87rem;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .modal-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .modal-btn.cancel {
+      background: rgba(255,255,255,0.06);
+      color: #94a3b8;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .modal-btn.confirm-purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
+    .modal-btn.confirm-red    { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+    .modal-btn.confirm-green  { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+    .modal-btn.confirm-blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← back</a>
+
+<p class="page-hint">// popup modals</p>
+
+<div class="trigger-group">
+  <button class="btn-trigger primary" onclick="openModal('modal-info')">Open Info</button>
+  <button class="btn-trigger danger"  onclick="openModal('modal-delete')">Delete Item</button>
+  <button class="btn-trigger success" onclick="openModal('modal-success')">Success</button>
+  <button class="btn-trigger info"    onclick="openModal('modal-confirm')">Confirm Action</button>
+</div>
+
+<!-- INFO MODAL -->
+<div class="overlay" id="modal-info" onclick="handleOverlayClick(event, 'modal-info')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-info')">✕</button>
+    <div class="modal-icon purple">💜</div>
+    <h2>Component Preview</h2>
+    <p>This is an accessible modal dialog with backdrop blur, spring entrance animation, and close-on-backdrop-click. Works great for confirmations, alerts, and forms.</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel"         onclick="closeModal('modal-info')">Dismiss</button>
+      <button class="modal-btn confirm-purple" onclick="closeModal('modal-info')">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="modal-delete" onclick="handleOverlayClick(event, 'modal-delete')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-delete')">✕</button>
+    <div class="modal-icon red">🗑️</div>
+    <h2>Delete this item?</h2>
+    <p>This action is permanent and cannot be undone. All associated data will be removed from the system immediately.</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel"       onclick="closeModal('modal-delete')">Cancel</button>
+      <button class="modal-btn confirm-red"  onclick="closeModal('modal-delete')">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="overlay" id="modal-success" onclick="handleOverlayClick(event, 'modal-success')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-success')">✕</button>
+    <div class="modal-icon green">✅</div>
+    <h2>Changes Saved!</h2>
+    <p>Your profile has been updated successfully. The changes will be visible to other users within a few minutes.</p>
+    <div class="modal-actions">
+      <button class="modal-btn confirm-green" onclick="closeModal('modal-success')">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="overlay" id="modal-confirm" onclick="handleOverlayClick(event, 'modal-confirm')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
+    <div class="modal-icon blue">⚡</div>
+    <h2>Publish Changes?</h2>
+    <p>You're about to publish 3 updates to your live project. Make sure everything looks right before going live.</p>
+    <div class="modal-actions">
+      <button class="modal-btn cancel"       onclick="closeModal('modal-confirm')">Review First</button>
+      <button class="modal-btn confirm-blue" onclick="closeModal('modal-confirm')">Publish Now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlayClick(e, id) {
+    if (e.target === e.currentTarget) closeModal(id);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.overlay.open').forEach(o => {
+        closeModal(o.id);
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

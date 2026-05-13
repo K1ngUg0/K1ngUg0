@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Button Hover Effects</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #07070f;
+      font-family: 'DM Sans', sans-serif;
+      color: #e2e8f0;
+      padding: 60px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(124,58,237,0.09) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .back {
+      position: fixed; top: 20px; left: 24px;
+      font-size: 12px; color: #475569;
+      text-decoration: none; font-family: 'JetBrains Mono', monospace;
+      transition: color 0.2s; z-index: 10;
+    }
+    .back:hover { color: #a78bfa; }
+
+    h1 {
+      text-align: center;
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #7c3aed;
+      margin-bottom: 48px;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      max-width: 780px;
+    }
+
+    /* ── Base button reset ── */
+    .btn {
+      padding: 13px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    /* ════ 1. Fill Slide ════ */
+    .btn-fill {
+      background: transparent;
+      color: #7c3aed;
+      border: 2px solid #7c3aed;
+    }
+    .btn-fill::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #7c3aed;
+      transform: translateX(-105%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      z-index: 0;
+    }
+    .btn-fill span { position: relative; z-index: 1; }
+    .btn-fill:hover { color: #fff; }
+    .btn-fill:hover::before { transform: translateX(0); }
+
+    /* ════ 2. Glow Pulse ════ */
+    .btn-glow {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+    }
+    .btn-glow:hover {
+      box-shadow: 0 0 30px rgba(124,58,237,0.7), 0 0 60px rgba(124,58,237,0.3);
+      transform: translateY(-2px);
+    }
+
+    /* ════ 3. Ripple ════ */
+    .btn-ripple {
+      background: #0f0e1a;
+      color: #a78bfa;
+      border: 1px solid rgba(124,58,237,0.3);
+    }
+    .btn-ripple .ripple-circle {
+      position: absolute;
+      width: 0; height: 0;
+      border-radius: 50%;
+      background: rgba(124,58,237,0.35);
+      transform: translate(-50%, -50%);
+      transition: width 0.5s ease, height 0.5s ease, opacity 0.5s ease;
+      opacity: 0;
+    }
+    .btn-ripple:hover .ripple-circle {
+      width: 300px; height: 300px;
+      opacity: 1;
+    }
+
+    /* ════ 4. Neon Border ════ */
+    .btn-neon {
+      background: transparent;
+      color: #a78bfa;
+      border: 1.5px solid #a78bfa;
+      transition: color 0.3s, box-shadow 0.3s, background 0.3s;
+    }
+    .btn-neon:hover {
+      color: #fff;
+      background: rgba(167,139,250,0.08);
+      box-shadow: 0 0 12px #a78bfa, 0 0 28px rgba(167,139,250,0.4), inset 0 0 12px rgba(167,139,250,0.08);
+    }
+
+    /* ════ 5. Scale Spring ════ */
+    .btn-spring {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+      box-shadow: 0 4px 16px rgba(79,70,229,0.4);
+    }
+    .btn-spring:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 28px rgba(79,70,229,0.5);
+    }
+    .btn-spring:active { transform: scale(0.96); }
+
+    /* ════ 6. Underline Sweep ════ */
+    .btn-underline {
+      background: transparent;
+      color: #e2e8f0;
+      padding-bottom: 11px;
+    }
+    .btn-underline::after {
+      content: '';
+      position: absolute;
+      bottom: 6px; left: 30px; right: 30px;
+      height: 2px;
+      background: #7c3aed;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s ease;
+    }
+    .btn-underline:hover { color: #a78bfa; }
+    .btn-underline:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    /* ════ 7. Ice / Frost ════ */
+    .btn-frost {
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+    }
+    .btn-frost:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+    }
+
+    /* ════ 8. Gradient Shift ════ */
+    .btn-gradient {
+      background: linear-gradient(90deg, #7c3aed, #ec4899, #f59e0b, #7c3aed);
+      background-size: 300% 100%;
+      color: #fff;
+      transition: background-position 0.5s ease, transform 0.2s ease;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+    }
+    .btn-gradient:hover {
+      background-position: 100% 0;
+      transform: translateY(-2px);
+    }
+
+    /* ════ 9. Arrow Slide ════ */
+    .btn-arrow {
+      background: #7c3aed;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: gap 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s;
+    }
+    .btn-arrow .arrow {
+      display: inline-block;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-arrow:hover { gap: 16px; box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+    .btn-arrow:hover .arrow { transform: translateX(4px); }
+
+    /* ════ 10. Shatter / 3D ════ */
+    .btn-3d {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      color: #fff;
+      box-shadow: 0 6px 0 #3b0764;
+      transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .btn-3d:hover {
+      box-shadow: 0 8px 0 #3b0764;
+      transform: translateY(-2px);
+    }
+    .btn-3d:active {
+      box-shadow: 0 2px 0 #3b0764;
+      transform: translateY(4px);
+    }
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← back</a>
+
+<h1>// button hover effects</h1>
+
+<div class="grid">
+  <button class="btn btn-fill"><span>Fill Slide</span></button>
+  <button class="btn btn-glow">Glow Pulse</button>
+  <button class="btn btn-ripple">
+    <div class="ripple-circle"></div>
+    Ripple
+  </button>
+  <button class="btn btn-neon">Neon Border</button>
+  <button class="btn btn-spring">Scale Spring</button>
+  <button class="btn btn-underline">Underline Sweep</button>
+  <button class="btn btn-frost">Frost Glass</button>
+  <button class="btn btn-gradient">Gradient Shift</button>
+  <button class="btn btn-arrow">Arrow Slide <span class="arrow">→</span></button>
+  <button class="btn btn-3d">3D Press</button>
+</div>
+
+<script>
+  // Ripple — track mouse position
+  document.querySelector('.btn-ripple').addEventListener('mousemove', function(e) {
+    const rect = this.getBoundingClientRect();
+    const circle = this.querySelector('.ripple-circle');
+    circle.style.left = (e.clientX - rect.left) + 'px';
+    circle.style.top  = (e.clientY - rect.top)  + 'px';
+  });
+</script>
+
+</body>
+</html>
