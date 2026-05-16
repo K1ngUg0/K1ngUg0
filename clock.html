@@ -47,7 +47,7 @@
       background: radial-gradient(circle, #7c3aed, transparent 70%);
       top: -150px; left: -100px;
       animation-duration: 18s;
-      animation-delay: 0s;
+      animation-iteration-count: infinite;
     }
 
     .orb-2 {
@@ -56,6 +56,7 @@
       bottom: -100px; right: -80px;
       animation-duration: 22s;
       animation-delay: -8s;
+      animation-iteration-count: infinite;
     }
 
     .orb-3 {
@@ -64,6 +65,7 @@
       top: 50%; left: 60%;
       animation-duration: 15s;
       animation-delay: -4s;
+      animation-iteration-count: infinite;
     }
 
     @keyframes orb-drift {
@@ -76,12 +78,17 @@
     /* ── BACK LINK ── */
     .back {
       position: fixed; top: 20px; left: 24px;
-      font-size: 12px; color: rgba(255,255,255,0.3);
+      font-size: 12px; color: rgba(255,255,255,0.5);
       text-decoration: none; font-family: 'DM Sans', monospace;
       letter-spacing: 0.05em;
       transition: color 0.2s; z-index: 100;
+      outline-offset: 2px;
     }
     .back:hover { color: #a78bfa; }
+    .back:focus-visible { 
+      outline: 2px solid #a78bfa;
+      color: #a78bfa;
+    }
 
     /* ── MAIN WRAPPER ── */
     .wrapper {
@@ -97,7 +104,7 @@
       font-family: 'DM Sans', sans-serif;
       font-size: 0.82rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.5);
       letter-spacing: 0.18em;
       text-transform: uppercase;
     }
@@ -178,7 +185,7 @@
     .seg-label {
       font-size: 0.62rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.4);
       letter-spacing: 0.2em;
       text-transform: uppercase;
     }
@@ -219,14 +226,17 @@
       font-weight: 700;
       color: rgba(167,139,250,0.7);
       letter-spacing: 0.08em;
+      min-width: 3ch;
     }
 
     .timezone {
       font-size: 0.75rem;
-      color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.45);
       letter-spacing: 0.1em;
       text-transform: uppercase;
       font-weight: 500;
+      min-width: 120px;
+      text-align: right;
     }
 
     /* seconds progress bar */
@@ -236,6 +246,7 @@
       background: rgba(255,255,255,0.07);
       border-radius: 2px;
       overflow: hidden;
+      min-width: 60px;
     }
 
     .seconds-bar {
@@ -250,6 +261,9 @@
     .world-clocks {
       display: flex;
       gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 600px;
     }
 
     .world-card {
@@ -271,7 +285,7 @@
 
     .world-city {
       font-size: 0.67rem;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.45);
       letter-spacing: 0.12em;
       text-transform: uppercase;
       font-weight: 600;
@@ -294,36 +308,36 @@
 <div class="orb orb-2"></div>
 <div class="orb orb-3"></div>
 
-<a class="back" href="index.html">← back</a>
+<a class="back" href="index.html" aria-label="Go back to home page">← back</a>
 
 <div class="wrapper">
 
-  <div class="date-label" id="date-label"></div>
+  <div class="date-label" id="date-label" aria-live="polite" aria-atomic="true"></div>
 
   <div class="clock-card">
     <div class="time-row">
       <div class="time-segment">
-        <div class="digits" id="hours"></div>
+        <div class="digits" id="hours" aria-label="Hours"></div>
         <div class="seg-label">hours</div>
       </div>
-      <div class="colon">:</div>
+      <div class="colon" aria-hidden="true">:</div>
       <div class="time-segment">
-        <div class="digits" id="minutes"></div>
+        <div class="digits" id="minutes" aria-label="Minutes"></div>
         <div class="seg-label">min</div>
       </div>
-      <div class="colon">:</div>
+      <div class="colon" aria-hidden="true">:</div>
       <div class="time-segment">
-        <div class="digits" id="seconds"></div>
+        <div class="digits" id="seconds" aria-label="Seconds"></div>
         <div class="seg-label">sec</div>
       </div>
     </div>
 
     <div class="meta-row">
-      <div class="ampm" id="ampm"></div>
+      <div class="ampm" id="ampm" aria-label="AM/PM"></div>
       <div class="seconds-bar-wrap">
         <div class="seconds-bar" id="seconds-bar"></div>
       </div>
-      <div class="timezone" id="timezone"></div>
+      <div class="timezone" id="timezone" aria-label="Current timezone"></div>
     </div>
   </div>
 
@@ -344,64 +358,97 @@
 
   // Build world clock cards
   const worldEl = document.getElementById('world-clocks');
+  const worldTimeElements = {};
+  
   CITIES.forEach(c => {
+    const id = c.label.replace(' ', '');
     const div = document.createElement('div');
     div.className = 'world-card';
-    div.innerHTML = `<div class="world-city">${c.label}</div><div class="world-time" id="wt-${c.label.replace(' ','')}" ></div>`;
+    div.innerHTML = `<div class="world-city">${c.label}</div><div class="world-time" id="wt-${id}"></div>`;
     worldEl.appendChild(div);
+    worldTimeElements[id] = document.getElementById(`wt-${id}`);
   });
 
   // Date label
   const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+  // Cache DOM elements
+  const elements = {
+    hours: document.getElementById('hours'),
+    minutes: document.getElementById('minutes'),
+    seconds: document.getElementById('seconds'),
+    ampm: document.getElementById('ampm'),
+    dateLabel: document.getElementById('date-label'),
+    timezone: document.getElementById('timezone'),
+    secondsBar: document.getElementById('seconds-bar')
+  };
+
   let lastSec = -1;
+  let lastMin = -1;
 
   function tick() {
     const now = new Date();
     const h24 = now.getHours();
     const m   = now.getMinutes();
     const s   = now.getSeconds();
+    const ms  = now.getMilliseconds();
     const h12 = h24 % 12 || 12;
     const ampm = h24 < 12 ? 'AM' : 'PM';
 
-    document.getElementById('hours').textContent   = pad(h12);
-    document.getElementById('minutes').textContent = pad(m);
-    document.getElementById('seconds').textContent = pad(s);
-    document.getElementById('ampm').textContent    = ampm;
-    document.getElementById('seconds-bar').style.width = ((s / 59) * 100) + '%';
+    // Update time display
+    elements.hours.textContent   = pad(h12);
+    elements.minutes.textContent = pad(m);
+    elements.seconds.textContent = pad(s);
+    elements.ampm.textContent    = ampm;
+    
+    // Smooth seconds bar with milliseconds
+    const totalMs = s * 1000 + ms;
+    elements.secondsBar.style.width = ((totalMs / 60000) * 100) + '%';
 
-    // date
-    document.getElementById('date-label').textContent =
+    // Update date (only when it changes)
+    elements.dateLabel.textContent =
       `${DAYS[now.getDay()]}, ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
 
-    // timezone
-    try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      document.getElementById('timezone').textContent = tz.replace('_', ' ');
-    } catch(_) {}
-
-    // tick glow flash on second change
-    if (s !== lastSec) {
-      lastSec = s;
-      const secEl = document.getElementById('seconds');
-      secEl.classList.add('tick');
-      setTimeout(() => secEl.classList.remove('tick'), 200);
+    // Update timezone (only on first load, rarely changes during session)
+    if (!elements.timezone.textContent) {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        elements.timezone.textContent = tz.replace(/_/g, ' ');
+      } catch(e) {
+        elements.timezone.textContent = 'Local Time';
+      }
     }
 
-    // world clocks
-    CITIES.forEach(c => {
-      const el = document.getElementById('wt-' + c.label.replace(' ',''));
-      if (!el) return;
-      const t = new Date().toLocaleTimeString('en-US', {
-        timeZone: c.tz, hour: '2-digit', minute: '2-digit', hour12: true
+    // Tick glow flash on second change
+    if (s !== lastSec) {
+      lastSec = s;
+      elements.seconds.classList.add('tick');
+      setTimeout(() => elements.seconds.classList.remove('tick'), 200);
+    }
+
+    // Update world clocks only when minutes change
+    if (m !== lastMin) {
+      lastMin = m;
+      CITIES.forEach(c => {
+        const id = c.label.replace(' ', '');
+        const el = worldTimeElements[id];
+        if (!el) return;
+        const t = new Date().toLocaleTimeString('en-US', {
+          timeZone: c.tz, hour: '2-digit', minute: '2-digit', hour12: true
+        });
+        el.textContent = t;
       });
-      el.textContent = t;
-    });
+    }
   }
 
+  // Use requestAnimationFrame for better performance
   tick();
-  setInterval(tick, 1000);
+  function loop() {
+    tick();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 </script>
 
 </body>
